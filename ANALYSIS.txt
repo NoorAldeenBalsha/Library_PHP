@@ -1,0 +1,54 @@
+The customer is the college librarian.
+First problem:
+The library is operating on paper ledgers, so books remain outside the library for months without anyone noticing.
+The solution is that when the code is executed, it runs a check on all books in the library, checks the duration, and provides a log for each book if it has exceeded the loan period.
+====================================================================================================================================================================================================================================================================================================================================================================================================================
+1- Add a new book process: Takes the book details (Title, Author, Publication Year, Section, Total Copies), and gives a success message for the addition (an intuitive process not mentioned by the customer, but the system needs it).
+2- Register a member and issue a card process: Takes the person's data and their type (Student/Professor), and gives a library card with a Unique ID and an expiry date after one year.
+3- Renew a card process: Takes the card number, and gives a new expiry date.
+4- Deactivate a card process: Takes the card number, and gives a "deactivated" status (an excellent addition from you!).
+5- Borrow a book process: Takes the card number and book ID. And gives: either a success message (if there are available copies, the card is active, and the allowed limit is not exceeded: 3 for a student and 5 for a professor) or a rejection message with the reason.
+6- View library status process (Comprehensive Report): Takes nothing, and gives a list of all books, their details, total copies, currently available copies, names of those who borrowed the unavailable copies, with highlighting of overdue books.
+7- Return a book process: Takes (card number, and book ID), and gives (an update to the copy's status to become available in the library, and prints the fine amount if it is late, with a reminder displaying the remaining borrowed books and their return dates).
+====================================================================================================================================================================================================================================================================================================================================================================================================================
+1- No book can be borrowed without possessing a valid and active library card.
+2- The maximum borrowing limit is strict and cannot be exceeded under any circumstances (3 books for a student, and 5 books for a professor).
+3- Book data is mandatory (a book cannot be added without a title, author, publication year, and specifying the number of copies).
+4- Member data is mandatory, and the card number is unique and impossible to be duplicated for two persons.
+5- A book cannot be loaned if all its copies are borrowed (available balance is zero).
+6- The loan duration is fixed and tied to the member type and cannot be exceeded (14 days for a student, 30 days for a professor).
+7- The book belongs to only one section, and cannot belong to two sections at the same time.
+====================================================================================================================================================================================================================================================================================================================================================================================================================
+1- Upcoming change: Adding a new member type ("Member from outside the university") with different rules for borrowing and fines.
+2- Software Design: I will adopt the Open/Closed principle using an abstract class (or Interface) representing the "Member", from which the Student and Doctor classes inherit, where each class contains its own rules (loan duration, book limit, fine). When adding the external member, I will create a new file for the ExternalMember class only, without modifying or breaking the core borrowing code.
+3- Database Design: I will place all members in one table members with a column specifying the type (type as ENUM or String), and I will not create a separate table for students and a table for doctors, so that I can easily add the third type tomorrow.
+====================================================================================================================================================================================================================================================================================================================================================================================================================
+Entities and Relationships
+1- Entities
+Sections, books, members, cards, and loan operations (loans).
+2- Relationships
+
+(One-to-One) Relationship: Member and Card
+Reason: Each member owns only one library card, and each card belongs to only one member.
+
+(One-to-Many) Relationship: Section and Books
+Reason: One section contains multiple books, but a single book belongs to only one section.
+
+(Many-to-Many) Relationship: Member and Book (Borrowing process)
+Reason and Architectural Modification: You said "each book can have only one member". This is true in the "current moment" for a single copy. But in databases, we also save the History; so the book (title) will be borrowed by student "Ahmad" today, and after a month it will be borrowed by student "Mahmoud", just as the member borrows multiple books.
+Solution: This is a Many-to-Many (M:N) relationship and requires an intermediary table (Pivot Table) that we will call loans.
+====================================================================================================================================================================================================================================================================================================================================================================================================================
+Question                                                                                                                              | My Logical Assumption
+1- If a member is late in returning a book and accumulates a financial fine without paying it, is he allowed to borrow a new book?    | Currently, we will assume he is allowed, because the customer only asked to calculate and display the fine and did not request a financial system for payment and blocking.
+2- Can a member borrow two copies of the same book (same title) at the same time?                                                     | No, the member has no right to keep more than one copy of the same book at the same time to ensure the distribution of books to everyone.
+3- Is it allowed to extend the loan period for the same book (Renew) before the period expires, without bringing the book to the library?| There is no extension in the current system. The book must be returned (ending the loan) and then borrowed again as a new process from scratch.
+4- When renewing an expired library card, is it extended for a year starting from the old card's expiry date or from the actual date of renewal today? | The renewal starts from the actual date of the renewal process (today), and expires after a full year from this date.
+5- What happens if the member loses the book or completely damages it?                                                                | The current system is not responsible for damages. The loan will remain open and the delay will accumulate until the librarian resolves it administratively.
+
+
+
+
+
+
+
+
